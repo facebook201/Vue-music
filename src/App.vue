@@ -5,12 +5,16 @@
   </div>
 </template>
 
-<script>
+<script type="text/ecmascript-6">
 export default {
   name: 'app'
 };
 </script>
 
-<style>
+<style scoped lang="less">
+@import "~common/less/variable.less";
 
+#app{
+  color: @color-theme;
+}
 </style>
