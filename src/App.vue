@@ -1,20 +1,24 @@
 <template>
   <div id="app">
-    Hello
-    <li></li>
+    <m-header></m-header>
   </div>
 </template>
 
-<script type="text/ecmascript-6">
+<script>
+import MHeader from 'component/m-header/m-header';
+
 export default {
-  name: 'app'
+  name: 'app',
+  components: {
+    MHeader
+  }
 };
 </script>
 
-<style scoped lang="less">
-@import "~common/less/variable.less";
+<style scoped lang="stylus" rel="stylesheet/stylus">
+@import "~common/stylus/variable";
 
 #app{
-  color: @color-theme;
+  color: $color-theme;
 }
 </style>

@@ -8,13 +8,13 @@
   </div>
 </template>
 
-<script type="text/ecmascript-6">
-  export default {}
+<script>
+export default {};
 </script>
 
-<style scoped lang="less">
-  @import "~common/stylus/variable"
-  @import "~common/stylus/mixin"
+<style scoped lang="stylus" rel="stylessheet/stylus">
+  @import "~common/stylus/variable";
+  @import "~common/stylus/mixin";
 
   .m-header
     position: relative
