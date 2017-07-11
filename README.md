@@ -17,6 +17,10 @@ Vue.use(Router); // 注册路由
 export default new Router({
   routes: [
     {
+      path: '/',
+      redirect: '/recommend' // 默认初始化启动的时候进入到这个路径 优化方案
+    },
+    {
       path: '/singer',
       component: Singer
     }
@@ -28,22 +32,14 @@ export default new Router({
 ```HTML
 
   <div class="tab">
-    <router-link tag="div" class="tab-item" to="/recommend">
-      <span class="tab-link">推荐</span>
-    </router-link>
-    <router-link tag="div" class="tab-item" to="/歌手">
-      <span class="tab-link">歌手</span>
-    </router-link>
-    <router-link tag="div" class="tab-item" to="/排行">
-      <span class="tab-link">排行</span>
-    </router-link>
-    <router-link tag="div" class="tab-item" to="/搜索">
-      <span class="tab-link">搜索</span>
+    <router-link tag="div" v-for="(item, index) of items" class="tab-item" :to="item.link">
+      <span class="tab-link">{{item.content}}</span>
     </router-link>
   </div>
 <!-- router-link  有一个tag属性。这个属性值 决定router-link渲染成什么html标签。默认是a标签 -->
 ```
 
+* jsonp 同源策略 动态创建script标签  因为script 标签没有跨越问题
 
 
 
