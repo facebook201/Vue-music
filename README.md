@@ -43,20 +43,19 @@ export default new Router({
 
 * 基础组件的开发 轮播图 放在 src 下面的目录。统一管理 base目录
 
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
+* 我们的数据可能是异步获取的。所有有的时候可能dom数据还没加载进来。所以 我们先判断返回数据的长度。
+```HTML
+<div v-if="recommend.length" class="slider-wrapper">
+  <Slider>
+    <div v-for="item in recommend">
+      <a :href="item.linkUrl">
+        <img :src="item.picUrl"></img>
+      </a>
+    </div>
+  </Slider>
+</div>
 ```
+
+## Build Setup
 
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).

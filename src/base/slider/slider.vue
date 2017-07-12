@@ -10,12 +10,14 @@
 
 <script>
 import BScroll from 'better-scroll';
+import { addClass } from 'common/js/dom';
+
 export default {
   props: {
-    // 是否可以循环轮播 
+    // 是否可以循环轮播
     loop: {
       type: Boolean,
-      default: true,
+      default: true
     },
     // 是否可以自动播放
     autoPlay: {
@@ -34,23 +36,41 @@ export default {
     setTimeout(() => {
       // 初始化操作
       this._setSliderWidth();
+      // 初始化dots dots的个数跟图片个数相匹配
+      this._initDots();
       this._initSlider();
     }, 20);
   },
   methods: {
     // 设置 slider的宽度
     _setSliderWidth() {
-      this.children = this.$ref.sliderGroup.children;
+      this.children = this.$refs.sliderGroup.children;
 
       let width = 0;
-      let sliderWidth = this.$ref.slider.clientWidth;
+      let sliderWidth = this.$refs.slider.clientWidth;
       for (let i = 0; i < this.children.length; i++) {
         let child = this.children[i];
+        addClass(child, 'slider-item');
+        child.style.width = sliderWidth + 'px';
+        width += sliderWidth;
       }
-    },  
-    // 初始化slider 
+      if (this.loop) {
+        width += 2 * sliderWidth;
+      }
+      this.$refs.sliderGroup.style.width = width + 'px';
+    },
+    // 初始化slider
     _initSlider() {
-
+      this.slider = new BScroll(this.$refs.slider, {
+        scrollX: true,
+        scrollY: false,
+        momentum: false,
+        snap: true,
+        snapLoop: this.loop,
+        snapThreshold: 0.3,
+        snapSpeed: 400,
+        click: true
+      });
     }
   }
 };
