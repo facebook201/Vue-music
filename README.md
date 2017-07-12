@@ -41,7 +41,7 @@ export default new Router({
 
 * jsonp 同源策略 动态创建script标签  因为script 标签没有跨越问题
 
-
+* 基础组件的开发 轮播图 放在 src 下面的目录。统一管理 base目录
 
 ## Build Setup
 

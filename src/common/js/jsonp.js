@@ -4,14 +4,14 @@ import originJSONP from 'jsonp';
 
 export default function jsonp(url, data, options) {
   url += (url.indexOf('?') < 0 ? '?' : '&') + param(data);
-  return new Promise((reslove, reject) => {
-    originJSONP(url, options, (err, data)) => {
-      if(!err) {
+  return new Promise((resolve, reject) => {
+    originJSONP(url, options, (err, data) => {
+      if (!err) {
         resolve(data);
       } else {
         reject(err);
       }
-    }
+    });
   });
 }
 
@@ -22,20 +22,20 @@ function param(data) {
     let value = data[k] !== void 0 ? data[k] : '';
     url = `&${k}=${encodeURIComponent(value)}`;
   }
-  return url ? url.subString(1) : '';
+  return url ? url.substring(1) : '';
 }
 
 /* 过滤参数 */
-function query(params) {
-  const param = params;
-  for (var i in param) {
-    if (!param[i] && param[i] == 0) {
-      delete param[i];
-    }
-  }
-  return param;
-}
+// function query(params) {
+//   const param = params;
+//   for (var i in param) {
+//     if (!param[i] && param[i] == 0) {
+//       delete param[i];
+//     }
+//   }
+//   return param;
+// }
 
-function unique(array) {
-  return Array.from(new Set(array));
-}
+// function unique(array) {
+//   return Array.from(new Set(array));
+// }
