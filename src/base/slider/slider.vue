@@ -37,7 +37,7 @@ export default {
       // 初始化操作
       this._setSliderWidth();
       // 初始化dots dots的个数跟图片个数相匹配
-      this._initDots();
+      // this._initDots();
       this._initSlider();
     }, 20);
   },
