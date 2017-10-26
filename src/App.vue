@@ -8,21 +8,19 @@
 
 <script>
 import MHeader from 'component/m-header/m-header';
-import tab from 'component/table/table';
+import Tab from 'component/table/table';
 
 export default {
-  name: 'app',
   components: {
     MHeader,
-    tab
+    Tab
   }
 };
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
-@import "~common/stylus/variable";
+@import 'common/stylus/variable';
 
-#app{
+#app
   color: $color-theme;
-}
 </style>

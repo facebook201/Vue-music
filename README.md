@@ -1,62 +1,83 @@
 # vue-music
 
-> 音乐播放器
+Vue 开发的音乐播放器 A Vue.js project
 
-#### 开发步骤
+#### 2017 8 25
+Vue 脚手架安装
 
-* 第一步初始化项目 安装好路由 注册路由 可以使用webpack配置好路径
+* sudo cnpm install -g vue-cli
+* vue init webpack vue-music
+* cd vue-music
+* cnpm install
+* cnpm run dev
 
-* 第二部 引入组件 配置好路由
+## ESlint 配置
+
+* 'semi': ['error','always'] // 必须加分号
+* 'space-before-function-paren': 0 // 函数前面的括号的空格省略
+
+### alias 别名路径配置
 ```javascript
-
-import Router from 'vue-router';
-import Singer from 'component/singer/singer'; // 歌手
-
-Vue.use(Router); // 注册路由
-
-export default new Router({
-  routes: [
-    {
-      path: '/',
-      redirect: '/recommend' // 默认初始化启动的时候进入到这个路径 优化方案
-    },
-    {
-      path: '/singer',
-      component: Singer
-    }
-  ]
-});
+function resolve(dir) {
+  return path.join(__dirname, '..', dir)
+}
+alias: {
+  'src': resolve('src'),
+  'common': resolve('src/common') // 可以这样来配置路径 写成类似绝对路径
+}
 ```
 
-* 第三 写好路由导航栏
-```HTML
+#### Vue 组件的一些小细节
+* import进来的组件第一个字母大写且要注意驼峰 MHeader m-header
 
-  <div class="tab">
-    <router-link tag="div" v-for="(item, index) of items" class="tab-item" :to="item.link">
-      <span class="tab-link">{{item.content}}</span>
-    </router-link>
-  </div>
-<!-- router-link  有一个tag属性。这个属性值 决定router-link渲染成什么html标签。默认是a标签 -->
+#### router-link
+router-link 里面的tag 可以指定渲染成什么样的标签。 默认是a
+```vue
+<router-link tag="div" v-for="(item, index) of items" :key="item.value" class="tab-item" :to="item.link">
+  <span class="tab-link">{{item.content}}</span>
+</router-link>
 ```
 
-* jsonp 同源策略 动态创建script标签  因为script 标签没有跨越问题
-
-* 基础组件的开发 轮播图 放在 src 下面的目录。统一管理 base目录
-
-* 我们的数据可能是异步获取的。所有有的时候可能dom数据还没加载进来。所以 我们先判断返回数据的长度。
-```HTML
-<div v-if="recommend.length" class="slider-wrapper">
-  <Slider>
-    <div v-for="item in recommend">
-      <a :href="item.linkUrl">
-        <img :src="item.picUrl"></img>
-      </a>
-    </div>
-  </Slider>
-</div>
+#### router 路由
+```javascript
+routes: [
+  {
+    path: '/',
+    redirect: Recommonend // 路由重定向 如果/ 就会自动跳到recommonend
+  }
+]
 ```
 
-## Build Setup
+#### slot 插槽
+```html
+    <slider>
+      <div class="slider">
+        
+      </div>
+    </slider>
+```
+# 项目布局
 
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
-Sdf
+```
+.
+├── build                                       // webpack配置文件
+├── config                                      // 项目打包路径
+├── src                                         // 源码目录
+|   |—— api                                     // 后端请求相关代码
+|   |—— common                                  // 通用文件
+|   |   |—— fonts                               // 字体文件
+|   |   |—— images                              // 图片
+|   |   |—— js                                  // 脚本
+│   ├── components                              // 组件
+│   │  
+│   │  
+│   ├── router                                  // 路由
+│   ├── store                                   // Vuex
+│   |
+│   ├── config                                  // 基本配置
+│   │   ├── env.js                              // 环境切换配置
+│   │   ├── fetch.js                            // 获取数据
+├── favicon.ico                                 // 图标
+├── index.html                                  // 入口html文件
+.
+```

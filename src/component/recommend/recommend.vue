@@ -2,13 +2,13 @@
   <div class="recommend" ref="recommend">
     <div class="recommend-content">
       <div v-if="recommend.length" class="slider-wrapper">
-        <Slider>
+        <slider>
           <div v-for="item in recommend">
             <a :href="item.linkUrl">
               <img :src="item.picUrl"></img>
             </a>
           </div>
-        </Slider>
+        </slider>
       </div>
       <div class="recommend-list">
         <h1 class="list-title">热门歌单推荐</h1>
@@ -46,7 +46,6 @@ export default {
     }
   }
 };
-
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
