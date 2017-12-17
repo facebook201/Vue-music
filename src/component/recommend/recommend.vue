@@ -1,40 +1,61 @@
 <template>
-  <div class="recommend" ref="recommend">
-    <div class="recommend-content">
-      <div v-if="recommend.length" class="slider-wrapper">
-        <slider>
-          <div v-for="item in recommend">
-            <a :href="item.linkUrl">
-              <img :src="item.picUrl"></img>
-            </a>
-          </div>
-        </slider>
+  <div class="recommend">
+    <scroll class="recommend-content" ref="scorll" :data="discList">
+      <div>
+        <div v-if="recommend.length" class="slider-wrapper">
+          <slider>
+            <div v-for="item in recommend">
+              <a :href="item.linkUrl">
+                <img @load="loadImage" :src="item.picUrl"></img>
+              </a>
+            </div>
+          </slider>
+        </div>
+        <div class="recommend-list">
+          <h1 class="list-title">热门歌单推荐</h1>
+          <ul>
+            <li v-for="item in discList" class="item">
+              <div class="icon">
+                <img width="60" height="60" v-lazy="item.imgurl" />
+              </div>
+              <div class="text">
+                <h2 class="name" v-html="item.creator.name"></h2>
+                <p class="desc" v-html="item.dissname"></p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
-      <div class="recommend-list">
-        <h1 class="list-title">热门歌单推荐</h1>
-        <ul>
-        </ul>
+      <div class="loading-container" v-show="!discList.length">
+        <Loading></Loading>
       </div>
-    </div>
+    </scroll>
   </div>
 </template>
 
 <script>
+import scroll from 'base/scroll/scroll';
 import Slider from 'base/slider/slider';
-import { getRecommend } from 'api/recommend';
+import Loading from 'base/loading/loading';
+import { getRecommend, getDiscList } from 'api/recommend';
 import { ERR_OK } from 'api/config';
 
 export default {
   components: {
-    Slider
+    Slider,
+    scroll,
+    // loading 根据返回歌单列表的数据 加载动画
+    Loading
   },
   data() {
     return {
-      recommend: []
+      recommend: [],
+      discList: []
     };
   },
   created() {
     this._getRecommend();
+    this._getDiscList(); // 歌单列表
   },
   methods: {
     _getRecommend() {
@@ -43,6 +64,22 @@ export default {
           this.recommend = res.data.slider;
         }
       });
+    },
+    // 歌单列表
+    _getDiscList() {
+      getDiscList().then(res => {
+        if (res.code === ERR_OK) {
+          this.discList = res.data.list;
+        }
+      });
+    },
+    loadImage() {
+      // 这里还有一个点 就是 我们只要有一张图片加载了就不需要执行这个
+      // 所以我们可以用一个变量来限制只执行一次
+      if (!this.checkLoaded) {
+        this.$refs.scorll.refresh();
+        this.checkLoaded = true;
+      }
     }
   }
 };

@@ -3,15 +3,22 @@
     <div class="slider-group" ref="sliderGroup">
       <slot></slot>
     </div>
-    <div class="dots"></div>
+    <div class="dots">
+      <span class="dot" v-for="(item, index) in dots" :class="{active: currentIndex === index}"></span>
+    </div>
   </div>
 </template>
 
 <script>
 import BScroll from 'better-scroll';
 import { addClass } from 'common/js/dom';
-
 export default {
+  data() {
+    return {
+      dots: [],
+      currentIndex: 0
+    };
+  },
   props: {
     // 是否可以循环轮播
     loop: {
@@ -36,15 +43,24 @@ export default {
       // 初始化操作
       this._setSliderWidth();
       // 初始化dots dots的个数跟图片个数相匹配
-      // this._initDots();
+      this._initDots();
       this._initSlider();
+      this._play();
     }, 20);
+    window.addEventListener('resize', () => {
+      // slider 还未初始化直接return
+      if (!this.slider) {
+        return;
+      }
+      // 设置标识位
+      this._setSliderWidth(true);
+      this.slider.refresh();
+    });
   },
   methods: {
     // 设置 slider的宽度
-    _setSliderWidth() {
+    _setSliderWidth(isResize) {
       this.children = this.$refs.sliderGroup.children;
-
       let width = 0;
       let sliderWidth = this.$refs.slider.clientWidth;
       for (let i = 0; i < this.children.length; i++) {
@@ -53,7 +69,7 @@ export default {
         child.style.width = sliderWidth + 'px';
         width += sliderWidth;
       }
-      if (this.loop) {
+      if (this.loop && !isResize) {
         width += 2 * sliderWidth;
       }
       this.$refs.sliderGroup.style.width = width + 'px';
@@ -67,10 +83,39 @@ export default {
         snap: true,
         snapLoop: this.loop,
         snapThreshold: 0.3,
-        snapSpeed: 400,
-        click: true
+        snapSpeed: 400
       });
+      this.slider.on('scrollEnd', () => {
+        let pageIndex = this.slider.getCurrentPage().pageX;
+        if (this.loop) {
+          pageIndex -= 1;
+        }
+        this.currentIndex = pageIndex;
+
+        if (this.autoPlay) {
+          clearTimeout(this.timer);
+          this._play();
+        }
+      });
+    },
+    _initDots() {
+      this.dots = new Array(this.children.length);
+    },
+    // 播放
+    _play() {
+      let pageIndex = this.currentIndex + 1;
+      // 如果当前在播放中
+      if (this.loop) {
+        pageIndex += 1;
+      }
+      this.timer = setTimeout(() => {
+        this.slider.goToPage(pageIndex, 0, 400);
+      }, this.interval);
     }
+  },
+  destroyed() {
+    // 好的习惯 在生命周期末期销毁定时器
+    clearTimeout(this.timer);
   }
 };
 </script>

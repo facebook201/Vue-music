@@ -48,11 +48,12 @@ routes: [
 ]
 ```
 
-#### slot 插槽
+#### slot 插槽 Slider 组件里面的dom会插入到slot里面
 ```html
     <slider>
+      <!-- 下面的内容会显示出来 -->
       <div class="slider">
-        
+
       </div>
     </slider>
 ```
@@ -64,6 +65,7 @@ routes: [
 ├── config                                      // 项目打包路径
 ├── src                                         // 源码目录
 |   |—— api                                     // 后端请求相关代码
+|   |—— base                                    // 基础组件
 |   |—— common                                  // 通用文件
 |   |   |—— fonts                               // 字体文件
 |   |   |—— images                              // 图片
