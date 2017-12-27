@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^0.16.1",
     "babel-runtime": "^6.0.0",
+    "chimee-mobile-player": "^0.0.2",
     "fastclick": "^1.0.6",
     "less": "^2.7.3",
     "less-loader": "^4.0.5",
