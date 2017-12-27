@@ -15,7 +15,11 @@ export function hasClass(el, className) {
   return reg.test(el.className);
 }
 
+<<<<<<< HEAD
 // 根据某个属性来获取index
+=======
+// 获取数据 根据属性来get 或者set属性值
+>>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
 export function getData(el, name, val) {
   const prefix = 'data-';
   name = prefix + name;
