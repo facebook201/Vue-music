@@ -1,21 +1,15 @@
 <template>
-<<<<<<< HEAD
-  <scroll class="listview" :data="data" ref="listview">
-    <ul>
-      <li v-for="group in data" class="list-group" ref="listgroup">
-=======
   <scroll class="listview" 
-          :data="data" 
+          :data="data"
           ref="listview"
           :listenScroll="listenScroll"
           @scroll="scroll"
-  >
+          :probeType="probeType">
     <ul>
-      <li v-for="group in data" :key="group.id" class="list-group" ref="listGroup">
->>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
+      <li v-for="group in data" class="list-group" :key="group.id" ref="listgroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li v-for="item in group.items" class="list-group-item">
+          <li v-for="item in group.items" :key="item.id" class="list-group-item">
             <img class="avatar" height="60" width="60" v-lazy="item.avatar" />
             <span class="name">{{item.name}}</span>
           </li>
@@ -23,35 +17,41 @@
       </li>
     </ul>
 
-<<<<<<< HEAD
     <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
       <ul>
-        <li v-for="(item, index) in shortcutList" class="item" :data-index="index">
-=======
-    <div class="list-shortcut" @touchstart="onShortcutTouchStart($event)" @touchmove.stop.prevent="onShortcutTouchMove">
-      <ul>
-        <li v-for="(item,index) in shortcutList" :data-index="index" :key="item.id" class="item">
->>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
+        <li v-for="(item, index) in shortcutList"
+            :key="item.id"
+            class="item"
+            :class="{'current': currentIndex===index}"
+            :data-index="index">
           {{item}}
-
         </li>
       </ul>
     </div>
   </scroll>
 </template>
 
-<<<<<<< HEAD
 <script type="text/javascript">
   import Scroll from 'base/scroll/scroll';
   import { getData } from 'common/js/dom';
 
   // 定义锚点的高度 来计算到底有几个锚点
   const ANCHOR_HEIGHT = 18;
-
   export default {
     created() {
       // 创建两个函数共享的数据 但是不用vue来监听
       this.touch = {};
+      this.listenScroll = true;
+      this.listHeight = [];
+      this.probeType = 3;
+    },
+    data() {
+      return {
+        // listview组件滚动时Y轴的变化 从子组件的BScroll派发出来
+        scrollY: -1,
+        // 保存滚动到哪个区间 然后使用这个值来跟右侧栏比较 显示高亮字母
+        currentIndex: 0
+      };
     },
     props: {
       data: {
@@ -66,9 +66,6 @@
           return group.title.substr(0, 1);
         });
       }
-    },
-    components: {
-      Scroll
     },
     methods: {
       onShortcutTouchStart(e) {
@@ -90,106 +87,65 @@
         // 得到偏移量 然后除以一个锚点的高度 得到偏移了几个锚点
         let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0;
         // 得到touchmove的index 开始加上锚点差
-        let anchorIndex = this.touch.anchorIndex + delta;
+        let anchorIndex = parseInt(this.touch.anchorIndex, 10) + delta;
         this._onScroll(anchorIndex);
       },
+      // 子组件派发出来的
+      scroll(pos) {
+        this.scrollY = pos.y;
+      },
       _onScroll(index) {
-        this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0);
+        // 第二个参数是要不要有动画的时间
+        this.$refs.listview.scrollToElement(this.$refs.listgroup[index], 0);
+      },
+      // 计算每个group的高度
+      _calculateHeight() {
+        this.listHeight = [];
+        // lisgroup的集合
+        const list = this.$refs.listgroup;
+        // 设置初始高度为0
+        let height = 0;
+        this.listHeight.push(height);
+
+        for (let i = 0, len = list.length; i < len; i++) {
+          let item = list[i];
+          height += item.clientHeight;
+          // 把每个区块的高度保存下来
+          this.listHeight.push(height);
+        }
       }
+    },
+    watch: {
+      data() {
+        setTimeout(() => {
+          this._calculateHeight();
+        }, 20);
+      },
+      // 时刻观测者scrollY的变化
+      scrollY(newY) {
+        const listHeight = this.listHeight;
+        for (let i = 0; i < listHeight.length; i++) {
+          let height1 = listHeight[i];
+          let height2 = listHeight[i + 1];
+          // 当向上滚动的时候newY就是负值
+          if (!height2 || (-newY > height1 && -newY < height2)) {
+            // 如果落在height2 和 -1之间
+            // 那个区间的索引
+            this.currentIndex = i;
+            return;
+          }
+        }
+        this.currentIndex = 0;
+      }
+    },
+    components: {
+      Scroll
     }
   };
-=======
-<script type="text/ecmascript-6">
-import Scroll from 'base/scroll/scroll';
-import { getData } from 'common/js/dom';
-
-// 定义锚点的高度
-const ANCHOR_HEIGHT = 18;
-
-export default {
-  created() {
-    // 我们不需要监测touch  所以不需要定义在data里面 data里面的都会加上get set方法
-    this.touch = {};
-    this.listenScroll = true;
-    this.listHeight = [];
-  },
-  data() {
-    return {
-      scrollY: -1,
-      currentIndex: 0
-    }
-  },
-  props: {
-    data: {
-      type: Array,
-      default: []
-    }
-  },
-  computed: {
-    shortcutList() {
-      return this.data.map((group) => {
-        return group.title;
-      });
-    }
-  },
-  methods: {
-    onShortcutTouchStart(e) {
-      // 获取点击的索引来
-      let anchorIndex = getData(e.target, 'index');
-      let firstTouch = e.touches[0]; // 第一次手指的位置
-      this.touch.y1 = firstTouch.pageY; // 获取第一次的坐标
-      this.touch.anchorIndex = anchorIndex; // 这里会返回一个字符串 而不是整数
-      this._scrollTo(anchorIndex);
-    },
-    onShortcutTouchMove(e) {
-      let firstTouch = e.touches[0];
-      this.touch.y2 = firstTouch.pageY;
-      let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0;
-      let anchorIndex = parseInt(this.touch.anchorIndex, 10) + delta;
-      this._scrollTo(anchorIndex);
-    },
-    scroll(pos) {
-      // 实时获得y轴的距离
-      this.scrollY = pos.y;
-    },
-    _scrollTo(index) {
-      this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0);
-    },
-    _calculateHeight() {
-      this.listHeight = [];
-      const list = this.$refs.listGroup;
-      let height = 0;
-      this.listHeight.push(height);
-      for (let i = 0; i < list.length; i++) {
-        let item = list[i];
-        height += item.clientHeight;
-        this.listHeight.push(height);
-      }
-    }
-  },
-  watch: {
-    data() {
-      setTimeout(() => {
-        this._calculateHeight();
-      }, 20);
-    },
-    scrollY(newY) {
-      const listHeight = this.listHeight;
-      for (let i = 0; i < listHeight.length; i++) {
-        
-      }
-    }
-  },
-  components: {
-    Scroll
-  }
-};
->>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
 </script>
 
 <style lang="stylus" scoped>
 @import '~common/stylus/variable';
-
 .listview
   position: relative
   width: 100%

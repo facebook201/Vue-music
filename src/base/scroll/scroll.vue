@@ -9,6 +9,7 @@ import BScroll from 'better-scroll';
 
 export default {
   props: {
+    // 这里默认的是节流的方式 如果不节流就传3
     probeType: {
       type: Number,
       default: 1
@@ -22,11 +23,7 @@ export default {
       type: Array,
       default: null
     },
-<<<<<<< HEAD
-    // 是否监听滚动事件
-=======
     // 要不要监听滚动事件
->>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
     listenScroll: {
       type: Boolean,
       default: false
@@ -43,13 +40,10 @@ export default {
         probeType: this.probeType,
         click: this.click
       });
+      // 如果监听了scroll 派发出去
       if (this.listenScroll) {
         let me = this;
-<<<<<<< HEAD
-        me.scroll.on('scroll', (pos) => {
-=======
         this.scroll.on('scroll', (pos) => {
->>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
           me.$emit('scroll', pos);
         });
       }
@@ -63,18 +57,10 @@ export default {
     refresh() {
       this.scroll && this.scroll.refresh();
     },
-<<<<<<< HEAD
-    // 滚动到指定位置
-    scrollTo() {
-      // 调用betterscroll的方法
-      this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments);
-    },
-=======
     scrollTo() {
       this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments);
     },
     // 滚动到指定元素
->>>>>>> 74ca66fb5ff4fc6b8f497e028ee2c9a69f3c6df8
     scrollToElement() {
       this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments);
     }
