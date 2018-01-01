@@ -9,6 +9,7 @@ import BScroll from 'better-scroll';
 
 export default {
   props: {
+    // 这里默认的是节流的方式 如果不节流就传3
     probeType: {
       type: Number,
       default: 1
@@ -38,6 +39,7 @@ export default {
         probeType: this.probeType,
         click: this.click
       });
+      // 如果监听了scroll 派发出去
       if (this.listenScroll) {
         let me = this;
         this.scroll.on('scroll', (pos) => {
