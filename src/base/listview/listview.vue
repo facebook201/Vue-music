@@ -9,7 +9,7 @@
       <li v-for="group in data" class="list-group" :key="group.id" ref="listgroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li v-for="item in group.items" :key="item.id" class="list-group-item">
+          <li @click="selectItem(item)" v-for="item in group.items" :key="item.id" class="list-group-item">
             <img class="avatar" height="60" width="60" v-lazy="item.avatar" />
             <span class="name">{{item.name}}</span>
           </li>
@@ -86,6 +86,10 @@
       }
     },
     methods: {
+      // 子组件点击 把当前这个对象的信息传给父组件
+      selectItem(item) {
+        this.$emit('select', item);
+      },
       onShortcutTouchStart(e) {
         // 获取右边锚索引 index
         let anchorIndex = getData(e.target, 'index');
