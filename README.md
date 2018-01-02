@@ -1,4 +1,6 @@
-# vue-music
+
+
+#### 技术胖 http://jspang.com/2017/05/22/vuedemo/
 
 Vue 开发的音乐播放器 A Vue.js project
 
