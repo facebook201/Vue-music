@@ -5,7 +5,52 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+import { getSingerDetail } from 'api/singer';
+import { ERR_OK } from 'api/config';
+import { createSong } from 'common/js/song';
+
 export default {
+  data() {
+    return {
+      songs: []
+    };
+  },
+  computed: {
+    ...mapGetters([
+      'singer'
+    ])
+  },
+  created() {
+    this._getDetail();
+  },
+  methods: {
+    _getDetail() {
+      // 因为vuex刷新之后数据会丢失 所以如果直接进入
+      if (!this.singer.id) {
+        // 没有id 就直接回退到此路由
+        this.$router.push('/singer');
+        return;
+      }
+      // 通过vuex 获取了singerid
+      getSingerDetail(this.singer.id).then(res => {
+        if (res.code === ERR_OK) {
+          this.songs = this._normalizeSongs(res.data.list);
+          console.log(this.songs);
+        }
+      });
+    },
+    _normalizeSongs(list) {
+      let ret = [];
+      list.forEach((item) => {
+        let {musicData} = item;
+        if (musicData.songid && musicData.albummid) {
+          ret.push(createSong(musicData));
+        }
+      });
+      return ret;
+    }
+  }
 };
 </script>
 
