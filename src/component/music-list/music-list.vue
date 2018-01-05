@@ -5,7 +5,7 @@
     </div>
     <h1 class="title">{{title}}</h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
-      <div class="filter"></div>
+      <div class="filter" ref="filter"></div>
     </div>
     <div class="bg-layer" ref="bglayer"></div>
     <scroll @scroll="scroll" :probe-type="probeType" :listen-scroll="listenScroll" :data="songs" class="list" ref="list">
@@ -19,6 +19,9 @@
 <script>
 import Scroll from 'base/scroll/scroll';
 import SongList from 'base/song-list/song-list';
+
+// 预留滚动到上面的高度
+const RESERVED_HEIGHT = 40;
 
 export default {
   props: {
@@ -50,7 +53,9 @@ export default {
     this.listenScroll = true;
   },
   mounted() {
-    this.$refs.list.$el.style.top = `${this.$refs.bgImage.clientHeight}px`;
+    this.imageHeight = this.$refs.bgImage.clientHeight; // 保存img的高度
+    this.minTranslateY = -this.imageHeight + RESERVED_HEIGHT;
+    this.$refs.list.$el.style.top = `${this.imageHeight}px`;
   },
   methods: {
     scroll(pos) {
@@ -59,10 +64,38 @@ export default {
     }
   },
   watch: {
-    scrollY(newval) {
+    scrollY(newY) {
+      // 设置bglayer的最大滚动距离 限制它一直滚动
+      let translateY = Math.max(this.minTranslateY, newY);
+      let zIndex = 0;
+      let scale = 1;
+      let blur = 0;
       // 随着scroll的滚动 scroll 会改变 然后慢慢向上移动
-      this.$refs.bglayer.style['transform'] = `translate3d(0, ${newval}px, 0)`;
-      this.$refs.bglayer.style['webkitTransform'] = `translate3d(0, ${newval}px, 0)`;
+      this.$refs.bglayer.style['transform'] = `translate3d(0, ${translateY}px, 0)`;
+      this.$refs.bglayer.style['webkitTransform'] = `translate3d(0, ${translateY}px, 0)`;
+
+      const precent = Math.abs(newY / this.imageHeight); // 放大的比例根据滚动的距离和图片的高度进行对比
+      if (newY > 0) {
+        scale = 1 + precent;
+        // 如果放大 bgImage 也要盖住下面的 同时这里的的image 设置了transform-origin: top 他会从顶部放大
+        zIndex = 10;
+      } else {
+        blur = Math.min(20 * precent, 20);
+      }
+      this.$refs.filter.style['backdrop-filter'] = `blur${blur}px`;
+      this.$refs.filter.style['webkitBackdrop-filter'] = `blur${blur}px`;
+      // 当bglayer滚动到距离顶部40px的时候 需要设置z-index 和 bgimg的高度 这样就可以完成需求
+      if (newY < this.minTranslateY) {
+        zIndex = 10;
+        this.$refs.bgImage.style.paddingTop = 0;
+        this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`;
+      } else {
+        this.$refs.bgImage.style.paddingTop = '70%';
+        this.$refs.bgImage.style.height = 0;
+      }
+      this.$refs.bgImage.style.zIndex = zIndex;
+      this.$refs.bgImage.style['transform'] = `scale(${scale})`;
+      this.$refs.bgImage.style['webkitTransform'] = `scale(${scale})`;
     }
   },
   components: {
