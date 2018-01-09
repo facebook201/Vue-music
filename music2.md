@@ -34,3 +34,90 @@ watch: {
 
 
 
+### 上滑动和下拉的动画 以及模糊
+
+通过上面的scrollY的值来判断是上滑动还是下拉。
+
+```javascript
+// 下滑的时候根据比例来设置放大的倍数
+let scale = 1;
+let blur = 1;
+
+const precent = Math.abs(newY / this.imageHeight);
+if (newY > 0) {
+  scale = 1 + precent;
+  zIndex = 10;
+} else {
+  blur = Math.min(20 * precent, 20);
+}
+this.$refs.fliter.style['backdrop-filter'] = `blur(${blur}px)`;
+this.$refs.fliter.style['webkitBackdrop-filter'] = `blur(${blur}px)`;
+```
+
+#### 与此同时 上面的那种js怎么统一封装这种添加前缀
+
+```javascript
+// 第一步 进行能力检测 
+let elementStyle = document.createElement('div').style;
+
+// 第二步 判断供应商
+let vendor = (() => {
+  let elementNames = {
+    wekbit: 'webkitTransform',
+    moz: 'mozTransform',
+    o: 'oTransform',
+    ms: 'msTransform',
+    standard: 'transform'
+  };
+  
+  for (let key in elementNames) {
+    if (elementstyle[elementNames[key]] !== void 0) {
+      return key;
+    }
+  }
+  return false;
+})();
+
+export function prefixStyle(style) {
+  if (vendor === false) {
+    return false;
+  }
+  if (vendor === 'standard') {
+    return style;
+  }
+  return vendor + style.charAt(0).toUpperCase() + style.substr(1);
+}
+
+// 使用
+const transform = prefixStyle('transform');
+const backdrop = prefixeStyle('backdrop-filter');
+let scale = 1;
+
+this.$refs.some.style[transform] = `scale(${scale})`;
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
