@@ -1,21 +1,276 @@
 <template>
   <div class="player" v-show="playlist.length > 0">
-    <div class="normal-player" v-show="fullScreen">
-      播放器
-    </div>
-    <div class="mini-player" v-show="!fullScreen"></div>
+    <transition name="normal"
+                @enter="enter"
+                @after-enter="afterEnter"
+                @leave="leave"
+                @after-leave="afterLeave">
+      <div class="normal-player" v-show="fullScreen">
+        <div class="background">
+          <img height="100%" width="100%" :src="currentSong.image">
+        </div>
+        <div class="top">
+          <div class="back" @click="back">
+            <i class="icon-back"></i>
+          </div>
+          <h1 class="title" v-html="currentSong.name"></h1>
+          <h2 class="subtitle" v-html="currentSong.singer"></h2>
+        </div>
+        <div class="middle">
+          <div class="middle-l">
+            <div class="cd-wrapper" ref="cdWrapper">
+              <div class="cd" :class="cdCls">
+                <img class="image" :src="currentSong.image">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom">
+          <div class="progress-wrapper">
+            <span class="time time-l">{{format(currentTime)}}</span>
+            <div class="progress-bar-wrapper">
+              <progress-bar :precent="precent" @precentChange="onProgressBarChange"></progress-bar>
+            </div>
+            <span class="time time-r">{{format(currentSong.duration)}}</span>
+          </div>
+          <div class="operators">
+            <div class="icon i-left">
+              <i class="icon-sequence"></i>
+            </div>
+            <div class="icon i-left" :class="disableCls">
+              <i @click="prev" class="icon-prev"></i>
+            </div>
+            <div class="icon i-center">
+              <i @click="togglePlaying" :class="playIcon"></i>
+            </div>
+            <div class="icon i-right" :class="disableCls">
+              <i @click="next" class="icon-next"></i>
+            </div>
+            <div class="icon i-right">
+              <i class="icon icon-not-favorite"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="mini">
+      <div @click="open" class="mini-player" v-show="!fullScreen">
+        <div class="icon">
+          <img :class="cdCls" width="40" height="40" :src="currentSong.image">
+        </div>
+        <div class="text">
+          <h2 class="name" v-html="currentSong.name"></h2>
+          <p class="desc" v-html="currentSong.singer"></p>
+        </div>
+        <div class="control">
+          <progress-circle :radius="radius" :precent="precent">
+            <i @click.stop="togglePlaying" :class="miniIcon" class="icon-mini"></i>
+          </progress-circle>
+        </div>
+      </div>
+    </transition>
+    <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error"
+    @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-import {mapGetters} from 'vuex';
+import {mapGetters, mapMutations} from 'vuex';
+import animations from 'create-keyframe-animation';
+import {prefixStyle} from 'common/js/dom';
+import ProgressBar from 'base/progress-bar/progress-bar';
+import ProgressCircle from 'base/progress-circle/progress-circle';
+
+const transform = prefixStyle('transform');
 
 export default {
+  data() {
+    return {
+      songReady: false,
+      currentTime: 0,
+      radius: 32
+    };
+  },
   computed: {
     ...mapGetters([
       'fullScreen',
-      'playlist'
-    ])
+      'playlist',
+      'currentSong',
+      'playing',
+      'currentIndex',
+      'mode'
+    ]),
+    cdCls() {
+      return this.playing ? 'play' : 'play-pause';
+    },
+    playIcon() {
+      return this.playing ? 'icon-pause' : 'icon-play';
+    },
+    miniIcon() {
+      return this.playing ? 'icon-pause-mini' : 'icon-play-mini';
+    },
+    disableCls() {
+      return this.songReady ? '' : 'disable';
+    },
+    precent() {
+      // 当前时间跟这首歌的时间的比例
+      return this.currentTime / this.currentSong.duration;
+    }
+  },
+  watch: {
+    currentSong() {
+      this.$nextTick(() => {
+        this.$refs.audio.play();
+      });
+    },
+    playing(newPlaying) {
+      const audio = this.$refs.audio;
+      this.$nextTick(() => {
+        newPlaying ? audio.play() : audio.pause();
+      });
+    }
+  },
+  methods: {
+    ...mapMutations({
+      setFullScreen: 'SET_FULL_SCREEN',
+      setPlayingState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX'
+    }),
+    // 下一首
+    next() {
+      if (!this.songReady) {
+        return;
+      }
+      let index = this.currentIndex + 1;
+      // 循环播放
+      if (index === this.playlist.length) {
+        index = 0;
+      }
+      this.setCurrentIndex(index);
+      // 切换下一首 要改变播放状态
+      if (!this.playing) {
+        this.togglePlaying();
+      }
+      this.songReady = false;
+    },
+    // 上一首
+    prev() {
+      if (!this.songReady) {
+        return;
+      }
+      let index = this.currentIndex - 1;
+      if (index === -1) {
+        index = this.playlist.length - 1;
+      }
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlaying();
+      }
+      this.songReady = false;
+    },
+    ready() {
+      this.songReady = true;
+    },
+    error() {
+      this.songReady = true;
+    },
+    updateTime(e) {
+      this.currentTime = e.target.currentTime;
+    },
+    format(interval) {
+      interval = interval | 0;
+      // 分钟
+      const minute = this._pad(interval / 60 | 0);
+      const second = this._pad(interval % 60);
+      return `${minute}:${second}`;
+    },
+    // 时间填充补位
+    _pad(num, n = 2) {
+      // 如果字符串长度为1就补0
+      let len = num.toString().length;
+      while (len < n) {
+        num = '0' + num;
+        len++;
+      }
+      return num;
+    },
+    back() {
+      this.setFullScreen(false);
+    },
+    open() {
+      this.setFullScreen(true);
+    },
+    enter(el, done) {
+      // 执行完done 就会进入下一个钩子
+      const {x, y, scale} = this._getPosAndScale();
+      let animation = {
+        0: {
+          transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`
+        },
+        60: {
+          transform: `translate3d(0, 0, 0) scale(1.1)`
+        },
+        100: {
+          transform: `translate3d(0, 0, 0) scale(1)`
+        }
+      };
+      animations.registerAnimation({
+        name: 'move',
+        animation,
+        presets: {
+          duraion: 400,
+          easing: 'linear'
+        }
+      });
+      // 第一个是dom
+      animations.runAnimation(this.$refs.cdWrapper, 'move', done);
+    },
+    afterEnter() {
+      animations.unregisterAnimation('move');
+      this.$refs.cdWrapper.style.animation = ''; // 清空animation
+    },
+    leave(el, done) {
+      this.$refs.cdWrapper.style.transition = 'all 0.4s';
+      const {x, y, scale} = this._getPosAndScale();
+      this.$refs.cdWrapper.style[transform] = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+      this.$refs.cdWrapper.addEventListener('transitionend', done);
+    },
+    onProgressBarChange(precent) {
+      // 操作播放器的currentTime 它是一个可读写的属性
+      // 把播放器的百分比 乘以歌曲的总时长 然后把得到的值赋值给当前播放的时间
+      this.$refs.audio.currentTime = this.currentSong.duration * precent;
+      // 拖动滚动条之后 如果是暂停那么切换播放状态 设置为播放状态
+      if (!this.playing) {
+        this.togglePlaying();
+      }
+    },
+    afterLeave() {
+      this.$refs.cdWrapper.style.transition = '';
+      this.$refs.cdWrapper.style[transform] = '';
+    },
+    togglePlaying() {
+      this.setPlayingState(!this.playing);
+    },
+    _getPosAndScale() {
+      const targetWidth = 40;
+      const paddingLeft = 40;
+      const paddingBottom = 30;
+      const paddingTop = 80;
+      const width = window.innerWidth * 0.8;
+      const scale = targetWidth / width; // 初始缩放
+      const x = -(window.innerWidth / 2 - paddingLeft);
+      const y = window.innerHeight - paddingTop - width / 2 - paddingBottom;
+      return {
+        x,
+        y,
+        scale
+      };
+    }
+  },
+  components: {
+    ProgressBar,
+    ProgressCircle
   }
 };
 </script>
