@@ -65,7 +65,11 @@ export default {
     },
     // 点击进度条 切换到想要的位置
     progressClick(e) {
-      this._offset(e.offsetX);
+      const rect = this.$refs.progressBar.getBoundingClientRect();
+      const offsetWidth = e.pageX - rect.left;
+      this._offset(offsetWidth);
+      // 当点击progressBtn e.offsetX获取不对
+      // this._offset(e.offsetX);
       this._triggerPrectent();
     }
   },

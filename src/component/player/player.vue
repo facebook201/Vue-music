@@ -35,7 +35,8 @@
           </div>
           <div class="operators">
             <div class="icon i-left">
-              <i class="icon-sequence"></i>
+              <!-- 播放模式 -->
+              <i :class="iconMode" @click="changeMode"></i>
             </div>
             <div class="icon i-left" :class="disableCls">
               <i @click="prev" class="icon-prev"></i>
@@ -71,7 +72,7 @@
       </div>
     </transition>
     <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error"
-    @timeupdate="updateTime"></audio>
+    @timeupdate="updateTime" @ended="end"></audio>
   </div>
 </template>
 
@@ -81,6 +82,8 @@ import animations from 'create-keyframe-animation';
 import {prefixStyle} from 'common/js/dom';
 import ProgressBar from 'base/progress-bar/progress-bar';
 import ProgressCircle from 'base/progress-circle/progress-circle';
+import {playMode} from 'common/js/config';
+import {shuffle} from 'common/js/util';
 
 const transform = prefixStyle('transform');
 
@@ -97,6 +100,7 @@ export default {
       'fullScreen',
       'playlist',
       'currentSong',
+      'sequenceList',
       'playing',
       'currentIndex',
       'mode'
@@ -116,10 +120,19 @@ export default {
     precent() {
       // 当前时间跟这首歌的时间的比例
       return this.currentTime / this.currentSong.duration;
+    },
+    // 播放模式
+    iconMode() {
+      return this.mode === playMode.sequence ? 'icon-sequence' : this.mode ===
+            playMode.loop ? 'icon-loop' : 'icon-random';
     }
   },
   watch: {
-    currentSong() {
+    currentSong(newSong, oldSong) {
+      // 在切换播放模式的防止触发这个事件
+      if (newSong.id === oldSong.id) {
+        return;
+      }
       this.$nextTick(() => {
         this.$refs.audio.play();
       });
@@ -135,8 +148,48 @@ export default {
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN',
       setPlayingState: 'SET_PLAYING_STATE',
-      setCurrentIndex: 'SET_CURRENT_INDEX'
+      setCurrentIndex: 'SET_CURRENT_INDEX',
+      setPlayMode: 'SET_PLAY_MODE',
+      setPlayList: 'SET_PLAYLIST'
     }),
+    // 播放结束的时候下一首
+    end() {
+      // 如果是单曲循环
+      if (this.mode === playMode.loop) {
+        this.loop();
+      } else {
+        this.next();
+      }
+    },
+    // 循环播放
+    loop() {
+      this.$refs.audio.currentTime = 0;
+      this.$refs.audio.play();
+    },
+    // 播放模式 这里注意切换播放模式的时候 currentSong会变化 导致watch currentsSong 会触发audio.play()
+    changeMode() {
+      const mode = (this.mode + 1) % 3;
+      this.setPlayMode(mode);
+      let list = null;
+      // 如果是随机模式
+      if (mode === playMode.random) {
+        // 洗牌的算法 把洗乱的数组返回回来
+        list = shuffle(this.sequenceList);
+      } else {
+        list = this.sequenceList;
+      }
+      // 设置currentIndex
+      this._resetCurrentIndex(list);
+      this.setPlayList(list);
+    },
+    _resetCurrentIndex(list) {
+      // 找到这首歌的id
+      let index = list.findIndex((item) => {
+        return item.id === this.currentSong.id;
+      });
+      // 设置当前index
+      this.setCurrentIndex(index);
+    },
     // 下一首
     next() {
       if (!this.songReady) {
