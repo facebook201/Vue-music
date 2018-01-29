@@ -90,6 +90,9 @@
       selectItem(item) {
         this.$emit('select', item);
       },
+      refresh() {
+        this.$refs.listview.refresh();
+      },
       onShortcutTouchStart(e) {
         // 获取右边锚索引 index
         let anchorIndex = getData(e.target, 'index');
