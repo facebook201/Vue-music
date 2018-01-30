@@ -1,6 +1,6 @@
  <template>
   <div class="recommend" ref="recommend">
-    <scroll class="recommend-content" ref="scorll" :data="discList">
+    <scroll class="recommend-content" ref="scroll" :data="discList">
       <div>
         <div v-if="recommend.length" class="slider-wrapper">
           <slider>
@@ -14,7 +14,7 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li v-for="item in discList" class="item">
+            <li @click="selectItem(item)" v-for="item in discList" class="item">
               <div class="icon">
                 <img width="60" height="60" v-lazy="item.imgurl" />
               </div>
@@ -30,6 +30,7 @@
         <Loading></Loading>
       </div>
     </scroll>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -40,6 +41,7 @@ import Loading from 'base/loading/loading';
 import { getRecommend, getDiscList } from 'api/recommend';
 import { ERR_OK } from 'api/config';
 import {playlistMixin} from 'common/js/mixin';
+import {mapMutations} from 'vuex';
 
 export default {
   mixins: [playlistMixin],
@@ -60,10 +62,19 @@ export default {
     this._getDiscList(); // 歌单列表
   },
   methods: {
+    ...mapMutations({
+      setDisc: 'SET_DISC'
+    }),
     handlePlaylist(playlist) {
       const bottom = playlist.length > 0 ? '60px' : '';
       this.$refs.recommend.style.bottom = bottom;
       this.$refs.scroll.refresh();
+    },
+    selectItem(item) {
+      this.setDisc(item);
+      this.$router.push({
+        path: `/recommend/${item.dissid}`
+      });
     },
     _getRecommend() {
       getRecommend().then((res) => {
@@ -84,7 +95,7 @@ export default {
       // 这里还有一个点 就是 我们只要有一张图片加载了就不需要执行这个
       // 所以我们可以用一个变量来限制只执行一次
       if (!this.checkLoaded) {
-        this.$refs.scorll.refresh();
+        this.$refs.scroll.refresh();
         this.checkLoaded = true;
       }
     }
