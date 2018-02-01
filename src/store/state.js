@@ -8,6 +8,7 @@ const state = {
   fullScreen: false,
   playlist: [],
   sequenceList: [],
+  topList: {}, // rank的数据
   mode: playMode.sequence,
   currentIndex: -1, // 当前播放的索引 控制前进后退
   disc: {} // 歌单对象

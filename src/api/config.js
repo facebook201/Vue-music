@@ -4,7 +4,7 @@
  */
 
 export const commonParams = {
-  g_tk: 1928093487,
+  g_tk: 67232076,
   inCharset: 'utf-8',
   outCharset: 'utf-8',
   notice: 0,
