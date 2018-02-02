@@ -23,6 +23,9 @@ export default {
     // 清空搜索
     clear() {
       this.query = '';
+    },
+    setQuery(query) {
+      this.query = query;
     }
   },
   created() {
