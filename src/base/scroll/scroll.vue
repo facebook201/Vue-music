@@ -26,6 +26,10 @@ export default {
     listenScroll: {
       type: Boolean,
       default: false
+    },
+    pullup: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -44,6 +48,16 @@ export default {
         let me = this;
         this.scroll.on('scroll', (pos) => {
           me.$emit('scroll', pos);
+        });
+      }
+      // 判断上拉刷新
+      if (this.pullup) {
+        this.scroll.on('scrollEnd', () => {
+          // 判断下拉的距离师傅大于50
+          if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
+            // 滚动到底部
+            this.$emit('scrollToEnd');
+          }
         });
       }
     },
