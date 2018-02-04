@@ -16,3 +16,19 @@ export function shuffle(arr) {
   }
   return _arr;
 }
+
+/**
+ * func 节流的回调
+ * delay 节流函数执行的时间间隔
+ */
+export function debounce(func, delay) {
+  let timer;
+  return function(...args) {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+};

@@ -4,6 +4,8 @@
           @scrollToEnd="searchMore"
           :pullup="pullup"
           ref="suggest"
+          :beforeScroll="beforeScroll"
+          @beforeScroll="listScroll"
   >
     <ul class="suggest-list">
       <li @click="selectItem(item)" class="suggest-item" v-for="item in result">
@@ -16,6 +18,9 @@
       </li>
       <loading v-show="hasMore" title=""></loading>
     </ul>
+    <div v-show="!hasMore && !result.length" class="no-result-wrapper">
+      <no-result title="抱歉，暂无数据"></no-result>
+    </div>
   </scroll>
 </template>
 
@@ -26,7 +31,8 @@ import {createSong} from 'common/js/song';
 import Scroll from 'base/scroll/scroll';
 import Loading from 'base/loading/loading';
 import Singer from 'common/js/singer';
-import {mapMutations} from 'vuex';
+import {mapMutations, mapActions} from 'vuex';
+import NoResult from 'base/no-result/no-result';
 
 const TYPE_SINGER = 'singer';
 const perPage = 20;
@@ -34,7 +40,8 @@ const perPage = 20;
 export default {
   components: {
     Scroll,
-    Loading
+    Loading,
+    NoResult
   },
   props: {
     query: {
@@ -52,13 +59,21 @@ export default {
       result: [],
       pullup: true,
       // 标志位 是否加载完
-      hasMore: true
+      hasMore: true,
+      beforeScroll: true
     };
   },
   methods: {
     ...mapMutations({
       setSinger: 'SET_SINGER'
     }),
+    ...mapActions([
+      'insertSong'
+    ]),
+    // scroll 组件滚动之前派发出来的
+    listScroll() {
+      this.$emit('listScroll');
+    },
     // 下拉查询更多信息
     searchMore() {
       if (!this.hasMore) {
@@ -86,7 +101,11 @@ export default {
           path: `/search/${singer.id}`
         });
         this.setSinger(singer);
+      } else {
+        this.insertSong(item);
       }
+      // 插入列表之后 派发一个事件出去 保存搜索历史
+      this.$emit('select');
     },
     getIconClass(item) {
       if (item.type === TYPE_SINGER) {

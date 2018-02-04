@@ -1,6 +1,7 @@
 import * as types from './mutation-type';
 import {playMode} from 'common/js/config';
 import {shuffle} from 'common/js/util';
+import {saveSearch} from 'common/js/cache';
 
 function findIndex(list, song) {
   return list.findIndex((item) => {
@@ -35,11 +36,11 @@ export const randomPlay = function ({commit}, {list}) {
 
 // 搜索列表插入歌曲
 export const insertSong = function({commit, state}, song) {
-  let playlist = state.playlist;
-  // let sequenceList = state.sequenceList;
+  let playlist = state.playlist.slice();
+  let sequenceList = state.sequenceList.slice();
   let currentIndex = state.currentIndex;
   // 记录当前歌曲
-  // let currentSong = playlist[currentIndex];
+  let currentSong = playlist[currentIndex];
   // 查找当前列表中是否有待插入的歌曲并返回索引
   let fpIndex = findIndex(playlist, song);
   // 因为是插入歌曲 所以索引要加1
@@ -56,4 +57,27 @@ export const insertSong = function({commit, state}, song) {
       playlist.splice(fpIndex + 1, 1);
     }
   }
+  let currentSIndex = findIndex(sequenceList, currentSong) + 1;
+
+  let fsIndex = findIndex(sequenceList, song);
+
+  sequenceList.splice(currentSIndex, 0, song);
+
+  if (fsIndex > -1) {
+    if (currentIndex > fsIndex) {
+      sequenceList.splice(fsIndex, 1);
+    } else {
+      sequenceList.splice(fsIndex + 1, 1);
+    }
+  }
+
+  commit(types.SET_PLAYLIST, playlist);
+  commit(types.SET_SEQUENCE_LIST, sequenceList);
+  commit(types.SET_CURRENT_INDEX, currentSIndex);
+  commit(types.SET_FULL_SCREEN, true);
+  commit(types.SET_PLAYING_STATE, true);
+};
+
+export const saveSearchHistory = function({commit}, query) {
+  commit(types.SET_SEARCH_HISTORY, saveSearch(query));
 };
